@@ -36,11 +36,12 @@ export const createLensForm = ({
   validate,
 }) => {
   const initialTouched = defaultInitialTouched || buildInitialTouched(initialValue)
+  const initialError = buildInitialTouched(initialValue)
 
   const useFormStore = create(devtools(set => {
     const setWithValidate = setter => {
       set(state => {
-        const error = validate(state.value)
+        const { error } = validate(state)
         const newState = { ...state, error }
         return setter(newState)
       })
@@ -49,7 +50,7 @@ export const createLensForm = ({
     return ({
       value: initialValue,
       touched: initialTouched,
-      error: {},
+      error: initialError,
       set: validate ? setWithValidate : set,
     })
   }, { name: formName }))
@@ -58,4 +59,4 @@ export const createLensForm = ({
 }
 
 export * from './lens'
-
+export * from './utils'

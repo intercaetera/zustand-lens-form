@@ -1,24 +1,34 @@
-import { createLensForm, createFieldLens, view, update } from '../../src'
+import { createLensForm, createFieldLens, view, update, pipe, inspect } from '../../src'
 import { TextField } from './fields/TextField'
 import './App.css'
+import { AddressField } from './fields/AddressField'
+
+const nameLens = createFieldLens('name')
+const surnameLens = createFieldLens('surname')
+const addressLens = createFieldLens('address')
 
 const useNameSurnameForm = createLensForm({
   initialValue: {
     name: '',
     surname: '',
+    address: {
+      street: '',
+      city: '',
+    }
   },
-  validate: ({ name, surname }) => {
-    let errors = {}
-    if (name == '') errors.name = "Name required."
-    if (surname == '') errors.surname = "Surname required."
-    return errors
+  validate: state => {
+    return pipe(state, [
+      state => view(nameLens, state).value === ""
+        ? update(nameLens, state, { error: "Name required" })
+        : update(nameLens, state, { error: false }),
+      state => view(surnameLens, state).value === ""
+        ? update(surnameLens, state, { error: "Surname required" })
+        : update(surnameLens, state, { error: false }),
+    ])
   }
 })
 
-const nameLens = createFieldLens('name')
-const surnameLens = createFieldLens('surname')
-
-function App() {
+const App = () => {
   return (
     <div>
       <TextField
@@ -32,6 +42,12 @@ function App() {
         name="surname"
         label="Surname"
         fieldLens={surnameLens}
+        useForm={useNameSurnameForm}
+      />
+
+      <AddressField
+        label="Address"
+        fieldLens={addressLens}
         useForm={useNameSurnameForm}
       />
     </div>
