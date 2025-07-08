@@ -12,7 +12,7 @@ const composeTwo = (outer, inner) => ({
   update: (whole, part) => update(outer, whole, update(inner, view(outer, whole), part)),
 })
 
-const identity = {
+export const identity = {
   view: a => a,
   update: (s, a) => a,
 }
@@ -24,4 +24,5 @@ export const pipe = (value, fns = []) => fns.reduce((val, fn) => fn(val), value)
 export const lenses = {
   value: createLens('value'),
   touched: createLens('touched'),
+  error: createLens('error'),
 }

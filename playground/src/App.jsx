@@ -1,4 +1,5 @@
 import { createLensForm, createFieldLens, view, update } from '../../src'
+import { TextField } from './fields/TextField'
 import './App.css'
 
 const useNameSurnameForm = createLensForm({
@@ -6,40 +7,33 @@ const useNameSurnameForm = createLensForm({
     name: '',
     surname: '',
   },
+  validate: ({ name, surname }) => {
+    let errors = {}
+    if (name == '') errors.name = "Name required."
+    if (surname == '') errors.surname = "Surname required."
+    return errors
+  }
 })
 
 const nameLens = createFieldLens('name')
 const surnameLens = createFieldLens('surname')
 
 function App() {
-  const nameField = useNameSurnameForm(s => view(nameLens, s))
-  const surnameField = useNameSurnameForm(s => view(surnameLens, s))
-
-  const [handleChange, handleBlur] = useNameSurnameForm(s => [s.handleChange, s.handleBlur])
-
   return (
     <div>
-      <div>
-        <label>Name:
-          <input
-            value={nameField.value}
-            style={{ background: nameField.touched ? 'green' : 'gold' }}
-            onChange={handleChange(nameLens)}
-            onBlur={handleBlur(nameLens)}
-          />
-        </label>
-      </div>
+      <TextField
+        name="name"
+        label="Name"
+        fieldLens={nameLens}
+        useForm={useNameSurnameForm}
+      />
 
-      <div>
-        <label>Surname:
-          <input
-            value={surnameField.value}
-            style={{ background: surnameField.touched ? 'green' : 'gold' }}
-            onChange={handleChange(surnameLens)}
-            onBlur={handleBlur(surnameLens)}
-          />
-        </label>
-      </div>
+      <TextField
+        name="surname"
+        label="Surname"
+        fieldLens={surnameLens}
+        useForm={useNameSurnameForm}
+      />
     </div>
   )
 }
