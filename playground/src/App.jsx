@@ -1,56 +1,22 @@
-import { createLensForm, createFieldLens, view, update, pipe, inspect } from '../../src'
-import { TextField } from './fields/TextField'
-import './App.css'
-import { AddressField } from './fields/AddressField'
-
-const nameLens = createFieldLens('name')
-const surnameLens = createFieldLens('surname')
-const addressLens = createFieldLens('address')
-
-const useNameSurnameForm = createLensForm({
-  initialValue: {
-    name: '',
-    surname: '',
-    address: {
-      street: '',
-      city: '',
-    }
-  },
-  validate: state => {
-    return pipe(state, [
-      state => view(nameLens, state).value === ""
-        ? update(nameLens, state, { error: "Name required" })
-        : update(nameLens, state, { error: false }),
-      state => view(surnameLens, state).value === ""
-        ? update(surnameLens, state, { error: "Surname required" })
-        : update(surnameLens, state, { error: false }),
-    ])
-  }
-})
+import { Link, Route, Switch } from "wouter"
+import { BasicForm } from "./pages/BasicForm"
 
 const App = () => {
   return (
-    <div>
-      <TextField
-        name="name"
-        label="Name"
-        fieldLens={nameLens}
-        useForm={useNameSurnameForm}
-      />
+    <main className="container">
+      <nav>
+        <ul>
+          <li><Link href="/basic">Basic Form</Link></li>
+          <li><Link href="/multi-step">Multi Step Form</Link></li>
+        </ul>
+      </nav>
 
-      <TextField
-        name="surname"
-        label="Surname"
-        fieldLens={surnameLens}
-        useForm={useNameSurnameForm}
-      />
-
-      <AddressField
-        label="Address"
-        fieldLens={addressLens}
-        useForm={useNameSurnameForm}
-      />
-    </div>
+      <Switch>
+        <Route path="/basic">
+          <BasicForm />
+        </Route>
+      </Switch>
+    </main>
   )
 }
 
