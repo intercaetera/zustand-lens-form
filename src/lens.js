@@ -25,4 +25,5 @@ export const lenses = {
   value: createLens('value'),
   touched: createLens('touched'),
   error: createLens('error'),
+  isValid: createLens('isValid'),
 }

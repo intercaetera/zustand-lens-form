@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { buildInitialTouched } from './builders'
 import { compose, createLens, lenses, pipe, update, view } from './lens'
-import { compareShapes, flattenObjectEntries } from './utils'
+import { compareShapes, flattenObjectEntries, tap } from './utils'
 
 export const createFieldLens = fieldName => {
   const fieldLens = createLens(fieldName)
@@ -31,13 +31,23 @@ export const createFieldLens = fieldName => {
 }
 
 export const createLensForm = ({
-  formName = 'Zustand Lens Form',
+  formName = `ZLF ID: ${Date.now()}`,
   initialValue = {},
   initialTouched: defaultInitialTouched,
-  validate,
+  validate: validateFromCaller,
 }) => {
   const initialTouched = defaultInitialTouched || buildInitialTouched(initialValue)
   const initialError = buildInitialTouched(initialValue)
+
+  const validate = validateFromCaller ? state => {
+    const { error } = validateFromCaller(state)
+    const isValid = flattenObjectEntries(error).every(([_, value]) => !value)
+
+    return pipe(state, [
+      state => update(lenses.error, state, error),
+      state => update(lenses.isValid, state, isValid),
+    ])
+  } : x => x
 
   const useFormStore = create(devtools(set => {
     const setWithCompare = setter => {
@@ -47,33 +57,25 @@ export const createLensForm = ({
       })
     }
 
-    const setWithValidate = setter => {
-      setWithCompare(state => {
-        const { error } = validate(state)
-        const newState = { ...state, error }
-        return setter(newState)
-      })
-    }
+    const setWithValidate = setter => setWithCompare(state => setter(validate(state)))
 
-    const decorateSubmit = handler => {
-      return () => setWithCompare(state => {
-        const { error } = validate(state)
-        const isValid = flattenObjectEntries(error).every(([_, value]) => !value)
-        const touched = buildInitialTouched(state.value, true)
-
-        if (isValid) {
-          handler(state.value)
-        }
-
-        return { ...state, touched, error }
-      })
-    }
+    const decorateSubmit = handler =>
+      () => setWithCompare(state =>
+        pipe(state, [
+          state => validate(state),
+          state => update(lenses.touched, state, buildInitialTouched(state.value, true)),
+          state => state.isValid ? tap(state, () => handler(state.value)) : state,
+        ]),
+      )
 
     return ({
       value: initialValue,
       touched: initialTouched,
       error: initialError,
-      set: validate ? setWithValidate : setWithCompare,
+      isValid: undefined,
+      isSubmitting: false,
+      hasSubmitted: false,
+      set: setWithValidate,
       decorateSubmit,
     })
   }, { name: formName }))

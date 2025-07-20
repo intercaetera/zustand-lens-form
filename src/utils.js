@@ -1,6 +1,11 @@
 // eslint-disable-next-line no-console
 export const inspect = (value, ...rest) => console.info(value, ...rest) || value
 
+export const tap = (value, fn) => {
+  fn()
+  return value
+}
+
 export const assertNoArrays = value => {
   if (Array.isArray(value)) {
     throw new Error('Array values are currently unsupported.')
