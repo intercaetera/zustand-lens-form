@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { buildInitialTouched } from './builders'
 import { compose, createLens, lenses, pipe, update, view } from './lens'
+import { compareShapes, flattenObjectEntries } from './utils'
 
 export const createFieldLens = fieldName => {
   const fieldLens = createLens(fieldName)
@@ -39,11 +40,34 @@ export const createLensForm = ({
   const initialError = buildInitialTouched(initialValue)
 
   const useFormStore = create(devtools(set => {
-    const setWithValidate = setter => {
+    const setWithCompare = setter => {
       set(state => {
+        compareShapes({ value: state.value, error: state.error, touched: state.touched })
+        return setter(state)
+      })
+    }
+
+    const setWithValidate = setter => {
+      setWithCompare(state => {
         const { error } = validate(state)
         const newState = { ...state, error }
         return setter(newState)
+      })
+    }
+
+    const decorateSubmit = handler => {
+      return () => setWithCompare(state => {
+        const { error } = validate(state)
+        const isValid = flattenObjectEntries(error).every(([_, value]) => !value)
+        const touched = buildInitialTouched(state.value, true)
+
+        console.log(error, isValid, flattenObjectEntries(error))
+
+        if (isValid) {
+          handler(state.value)
+        }
+
+        return { ...state, touched, error }
       })
     }
 
@@ -51,7 +75,8 @@ export const createLensForm = ({
       value: initialValue,
       touched: initialTouched,
       error: initialError,
-      set: validate ? setWithValidate : set,
+      set: validate ? setWithValidate : setWithCompare,
+      decorateSubmit,
     })
   }, { name: formName }))
 

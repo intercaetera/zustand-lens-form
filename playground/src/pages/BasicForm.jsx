@@ -8,7 +8,8 @@ const nameLens = createFieldLens('name')
 const surnameLens = createFieldLens('surname')
 const addressLens = createFieldLens('address')
 
-const useNameSurnameForm = createLensForm({
+const useBasicForm = createLensForm({
+  formName: 'Basic Form',
   initialValue: {
     name: '',
     surname: '',
@@ -30,6 +31,9 @@ const useNameSurnameForm = createLensForm({
 })
 
 const PureBasicForm = ({ submitForm }) => {
+  const decorateSubmit = useBasicForm(s => s.decorateSubmit)
+  const handleSubmit = decorateSubmit(submitForm)
+
   return (
     <div>
       <h2>Details</h2>
@@ -38,23 +42,23 @@ const PureBasicForm = ({ submitForm }) => {
         name="name"
         label="Name"
         fieldLens={nameLens}
-        useForm={useNameSurnameForm}
+        useForm={useBasicForm}
       />
 
       <TextField
         name="surname"
         label="Surname"
         fieldLens={surnameLens}
-        useForm={useNameSurnameForm}
+        useForm={useBasicForm}
       />
 
       <AddressField
         label="Address"
         fieldLens={addressLens}
-        useForm={useNameSurnameForm}
+        useForm={useBasicForm}
       />
 
-      <button>Submit</button>
+      <button onClick={handleSubmit}>Submit</button>
     </div>
   )
 }

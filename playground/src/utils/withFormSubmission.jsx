@@ -7,10 +7,14 @@ export const withFormSubmission = Component => {
       values: {},
     })
 
-    const submitForm = values => setSubmissionState({
-      submitted: true,
-      values,
-    })
+    const submitForm = values => {
+      console.info('Submitting form with values', values)
+
+      return setSubmissionState({
+        submitted: true,
+        values,
+      })
+    }
 
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

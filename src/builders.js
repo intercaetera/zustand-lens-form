@@ -1,10 +1,10 @@
-export const buildInitialTouched = initialValues => {
+import { assertNoArrays } from './utils'
+
+export const buildInitialTouched = (initialValues, touchedValue = false) => {
   const entries = Object.entries(initialValues)
 
   const initialTouchedEntries = entries.map(([key, value]) => {
-    if (Array.isArray(value)) {
-      throw new Error('Currently array values are unsupported, you need to provide initialTouched manually.')
-    }
+    assertNoArrays(value)
 
     if (typeof value === 'object' && value !== null) {
       return [key, buildInitialTouched(value)]
