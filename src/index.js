@@ -59,6 +59,7 @@ export const createLensForm = ({
 
     const setWithValidate = setter => setWithCompare(state => setter(validate(state)))
 
+    // TODO: Handle async
     const decorateSubmit = handler =>
       () => setWithCompare(state =>
         pipe(state, [
