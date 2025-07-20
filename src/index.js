@@ -61,8 +61,6 @@ export const createLensForm = ({
         const isValid = flattenObjectEntries(error).every(([_, value]) => !value)
         const touched = buildInitialTouched(state.value, true)
 
-        console.log(error, isValid, flattenObjectEntries(error))
-
         if (isValid) {
           handler(state.value)
         }
